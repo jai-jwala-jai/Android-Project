@@ -69,17 +69,13 @@ object SupabaseModule {
 
     @Provides
     @Singleton
-    fun provideChatRepository(client: SupabaseClient): ChatRepository {
-        return ChatRepositoryImpl(
-            provideSupabaseDatabase(client)
-        )
+    fun provideChatRepository(postgrest: Postgrest): ChatRepository {
+        return ChatRepositoryImpl(postgrest)
     }
 
     @Provides
     @Singleton
-    fun provideMessageRepository(client: SupabaseClient): MessageRepository {
-        return MessageRepositoryImpl(
-            provideSupabaseDatabase(client)
-        )
+    fun provideMessageRepository(postgrest: Postgrest): MessageRepository {
+        return MessageRepositoryImpl(postgrest)
     }
 }
