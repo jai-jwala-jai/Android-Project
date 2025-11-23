@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -196,12 +197,10 @@ fun ContinueWithGoogle(
                     .addCredentialOption(googleLogInViewModel.provideGoogleIdOption())
                     .build()
 
-                val result = withContext(Dispatchers.IO) {
-                    credentialManager.getCredential(
-                        context = context,
-                        request = request
-                    )
-                }
+                val result = credentialManager.getCredential(
+                    context = context,
+                    request = request
+                )
 
                 val googleIdTokenCredential = GoogleIdTokenCredential
                     .createFrom(result.credential.data)
@@ -239,7 +238,7 @@ fun ContinueWithGoogle(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable {
                 onClick()
