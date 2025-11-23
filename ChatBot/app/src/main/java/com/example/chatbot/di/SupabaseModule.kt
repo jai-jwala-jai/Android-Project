@@ -64,16 +64,13 @@ object SupabaseModule {
     fun provideAuthRepository(auth: Auth): AuthRepository =
         AuthRepositoryImpl(auth)
 
-
     @Provides
     @Singleton
     fun provideChatRepository(postgrest: Postgrest): ChatRepository =
         ChatRepositoryImpl(postgrest)
 
-
     @Provides
     @Singleton
     fun provideMessageRepository(postgrest: Postgrest): MessageRepository =
         MessageRepositoryImpl(postgrest)
-
 }
