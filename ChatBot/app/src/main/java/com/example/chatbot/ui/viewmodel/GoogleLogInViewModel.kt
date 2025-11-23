@@ -32,17 +32,7 @@ class GoogleLogInViewModel @Inject constructor(
 
     fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
-            try {
-                authRepository.signInWithIdToken(idToken, rawNonce)
-            } catch (e: GetCredentialException) {
-                println("Credential error: ${e.printStackTrace()}")
-            } catch (e: GoogleIdTokenParsingException) {
-                println("GoogleIdTokenParsing error: ${e.printStackTrace()}")
-            } catch (e: RestException) {
-                println("RestException: ${e.printStackTrace()}")
-            } catch (e: Exception) {
-                println("Google sign in error: ${e.printStackTrace()}")
-            }
+            authRepository.signInWithIdToken(idToken, rawNonce)
         }
     }
 }

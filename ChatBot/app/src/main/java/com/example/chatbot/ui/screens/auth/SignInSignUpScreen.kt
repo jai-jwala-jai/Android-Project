@@ -38,13 +38,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatbot.R
 import com.example.chatbot.ui.viewmodel.GoogleLogInViewModel
 import com.example.chatbot.ui.viewmodel.SignInSignUpViewModel
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import io.github.jan.supabase.exceptions.RestException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SignInSigUpScreen(
@@ -141,7 +147,7 @@ fun EmailForm(
             shape = MaterialTheme.shapes.large,
             modifier = Modifier.fillMaxWidth()
         )
-        if(error) {
+        if (error) {
             Text(
                 text = "Invalid email",
                 style = MaterialTheme.typography.titleMedium,
@@ -156,7 +162,7 @@ fun EmailForm(
     Button(
         onClick = {
             sendOtp { success ->
-                if(success) {
+                if (success) {
                     navigateToVerificationScreen(email)
                 }
             }
@@ -164,12 +170,11 @@ fun EmailForm(
         enabled = enable,
         modifier = Modifier.fillMaxWidth()
     ) {
-        if(loading) {
+        if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
             )
-        }
-        else {
+        } else {
             Text("Continue")
         }
     }
@@ -183,24 +188,38 @@ fun ContinueWithGoogle(
     val scope = rememberCoroutineScope()
 
     val onClick: () -> Unit = {
-        val credentialManager = CredentialManager.create(context)
-
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(googleLogInViewModel.provideGoogleIdOption())
-            .build()
-
         scope.launch {
-            val result = credentialManager.getCredential(
-                context = context,
-                request = request
-            )
+            try {
+                val credentialManager = CredentialManager.create(context)
 
-            val googleIdTokenCredential = GoogleIdTokenCredential
-                .createFrom(result.credential.data)
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleLogInViewModel.provideGoogleIdOption())
+                    .build()
 
-            val idToken = googleIdTokenCredential.idToken
+                val result = withContext(Dispatchers.IO) {
+                    credentialManager.getCredential(
+                        context = context,
+                        request = request
+                    )
+                }
 
-            googleLogInViewModel.signInWithGoogle(idToken)
+                val googleIdTokenCredential = GoogleIdTokenCredential
+                    .createFrom(result.credential.data)
+
+                val idToken = googleIdTokenCredential.idToken
+                googleLogInViewModel.signInWithGoogle(idToken)
+
+            } catch (e: GetCredentialCancellationException) {
+                println("Credential cancellation error: ${e.message}")
+            } catch (e: GetCredentialException) {
+                println("Credential error: ${e.message}")
+            } catch (e: GoogleIdTokenParsingException) {
+                println("GoogleIdTokenParsing error: ${e.message}")
+            } catch (e: RestException) {
+                println("RestException: ${e.message}")
+            } catch (e: Exception) {
+                println("Google sign in error: ${e.message}")
+            }
         }
     }
 
